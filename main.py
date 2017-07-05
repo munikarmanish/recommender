@@ -1,23 +1,14 @@
 #!/bin/env python3
 
-from matplotlib import pyplot as plt
-from scipy.io import loadmat
+from utils import load_from_file
+
+NUM_FEATURES = 10
 
 
 def main():
     print('[INFO] Loading matrix...')
-    raw_mat = loadmat('movies.mat')
-    # R = raw_mat.get('R')
-    Y = raw_mat.get('Y')
-
-    # print('R:', R.shape)
-    # print('Y:', Y.shape)
-
-    print('[INFO] Visualizing rating matrix...')
-    plt.matshow(Y)
-    plt.xlabel("Users")
-    plt.ylabel("Movies")
-    plt.show()
+    Y = load_from_file('data/Y.bin')
+    print('Y:', Y)
 
 
 if __name__ == '__main__':
