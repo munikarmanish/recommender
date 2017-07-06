@@ -49,8 +49,28 @@ class CostFunctionTest(unittest.TestCase):
         # logging.info("Computed cost = {:.2f}".format(cost))
         self.assertAlmostEqual(22.22, cost, places=2)
 
+    def test_cf_gradient_without_regularization(self):
+        # Create small problem
+        num_users, num_movies, num_features = 4, 5, 3
+        X_t = np.random.random((num_movies, num_features))
+        Theta_t = np.random.random((num_users, num_features))
+        Y = np.dot(X_t, Theta_t.T)
+        self.assertEqual((num_movies, num_users), Y.shape)
+        Y[np.random.random(Y.shape) > 0.5] = 0
+        R = np.zeros_like(Y)
+        R[Y != 0] = 1
+
+        X = np.random.standard_normal(X_t.shape)
+        Theta = np.random.standard_normal(Theta_t.shape)
+        params = np.append(X.flatten(), Theta.flatten())
+        numgrad = utils.numerical_grad(
+            lambda x: utils.cf_cost(x, Y, R, num_features, reg=0)[0], params)
+        J, grad = utils.cf_cost(params, Y, R, num_features, reg=0)
+        np.testing.assert_almost_equal(numgrad, grad, decimal=2)
+
 
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stderr,
-                        format='[%(levelname)s]: %(message)s', level=logging.INFO)
+    logging.basicConfig(
+        stream=sys.stderr, format='[%(levelname)s]: %(message)s',
+        level=logging.INFO)
     unittest.main()
