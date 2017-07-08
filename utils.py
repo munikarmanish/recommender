@@ -43,27 +43,27 @@ def cf_cost(params, Y, R, num_features=Recommender.DEFAULT_NUM_FEATURES,
     X_grad = np.zeros_like(X)
     Theta_grad = np.zeros_like(Theta)
 
-    J = (.5 * np.sum(((np.dot(Theta, X.T).T - Y) * R)**2) +
-         ((reg / 2) * np.sum(Theta**2)) +
-         ((reg / 2) * np.sum(X**2)))
+    # Cost
+    J = 0.5 * (np.sum(((np.dot(X, Theta.T) - Y) * R)**2) +
+               (reg * np.sum(Theta**2)) + (reg * np.sum(X**2)))
 
-    for l in range(num_movies):
-        for b in range(num_features):
-            X_grad[l, b] = 0
-            for allJ in range(num_users):
-                if R[l, allJ] == 1:
-                    X_grad[l, b] += (np.dot(Theta[allJ, :], X[l, :].T) -
-                                     Y[l, allJ]) * Theta[allJ, b]
-            X_grad[l, b] += reg * X[l, b]
+    # Gradients
+    X_grad = np.dot(((np.dot(X, Theta.T) - Y) * R), Theta) + (reg * X)
+    Theta_grad = np.dot(((np.dot(X, Theta.T) - Y) * R).T, X) + (reg * Theta)
 
-    for nU in range(num_users):
-        for c in range(num_features):
-            Theta_grad[nU, c] = 0
-            for allI in range(num_movies):
-                if R[allI, nU] == 1:
-                    Theta_grad[nU, c] += (np.dot(Theta[nU, :], X[allI, :].T) -
-                                          Y[allI, nU]) * X[allI, c]
-            Theta_grad[nU, c] = Theta_grad[nU, c] + (reg * Theta[nU, c])
-
-    grad = np.append(X_grad.flatten(), Theta_grad.flatten())
+    # serialize the paramters
+    grad = np.concatenate((X_grad.flatten(), Theta_grad.flatten()))
     return (J, grad)
+
+
+def normalize_ratings(Y, R):
+    Y = Y.astype(float)
+    num_movies, num_users = Y.shape
+    Ymean = np.zeros(num_movies)
+    Ynorm = np.zeros_like(Y)
+    # loop for each movie
+    for i in range(num_movies):
+        idx = np.where(R[i,:] == 1)
+        Ymean[i] = Y[i, idx].mean()
+        Ynorm[i,idx] = Y[i,idx] - Ymean[i]
+    return Ynorm, Ymean
