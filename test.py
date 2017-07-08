@@ -11,6 +11,24 @@ import recommender
 import utils
 
 
+class RecommenderTest(unittest.TestCase):
+
+    def test_learn_and_save(self):
+        # num_users, num_movies, num_features = 10, 10, 5
+        R = utils.load_from_file('data/R.bin').astype(float)
+        Y = utils.load_from_file('data/Y.bin')
+
+        model = recommender.Recommender(Y=Y, R=R, reg=1, num_features=10)
+        model.learn(maxiter=10, verbose=True)
+        X, Theta = model.X, model.Theta
+
+        filename = "models/recommender.bin"
+        model.save(filename)
+        model = recommender.Recommender.load(filename)
+        np.testing.assert_almost_equal(X, model.X, decimal=2)
+        np.testing.assert_almost_equal(Theta, model.Theta, decimal=2)
+
+
 class CostFunctionTest(unittest.TestCase):
 
     def test_numerical_gradient(self):
@@ -106,27 +124,15 @@ class CostFunctionTest(unittest.TestCase):
         J, grad = utils.cf_cost(params, Y, R, num_features, reg=reg)
         np.testing.assert_almost_equal(numgrad, grad, decimal=2)
 
+
+class UtilsTest:
+
     def test_rating_normalization(self):
         Y = utils.load_from_file('data/Y.bin')[:10, :10]
         R = utils.load_from_file('data/R.bin')[:10, :10]
         Ynorm, Ymean = utils.normalize_ratings(Y, R)
         Ymean_target = np.array([4.2, 3, 4, 4, 3, 5, 3.66666667, 3.33333333, 4.5, 3])
         np.testing.assert_almost_equal(Ymean, Ymean_target, decimal=2)
-
-    def test_learn_and_save(self):
-        # num_users, num_movies, num_features = 10, 10, 5
-        R = utils.load_from_file('data/R.bin').astype(float)
-        Y = utils.load_from_file('data/Y.bin')
-
-        model = recommender.Recommender(Y=Y, R=R, reg=1, num_features=10)
-        model.learn(verbose=True, maxiter=10)
-        X, Theta = model.X, model.Theta
-
-        filename = "models/recommender.bin"
-        model.save(filename)
-        model = recommender.Recommender.load(filename)
-        np.testing.assert_almost_equal(X, model.X, decimal=2)
-        np.testing.assert_almost_equal(Theta, model.Theta, decimal=2)
 
 
 if __name__ == '__main__':

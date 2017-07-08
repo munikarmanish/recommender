@@ -46,8 +46,9 @@ class Recommender:
         extra_args = (Y, R, num_features, reg)
 
         def callback(x):
-            sys.stdout.write('.')
-            sys.stdout.flush()
+            if verbose:
+                sys.stdout.write('.')
+                sys.stdout.flush()
 
         # Cost minimization
         logging.info("Running the optimizer...")
