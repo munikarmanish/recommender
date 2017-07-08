@@ -28,6 +28,16 @@ class RecommenderTest(unittest.TestCase):
         np.testing.assert_almost_equal(X, model.X, decimal=2)
         np.testing.assert_almost_equal(Theta, model.Theta, decimal=2)
 
+    def test_recommendation(self):
+        R = utils.load_from_file('data/R.bin').astype(float)
+        Y = utils.load_from_file('data/Y.bin')
+        model = recommender.Recommender(Y=Y, R=R, reg=1, num_features=10)
+        model.learn(maxiter=10, verbose=True, normalize=True)
+        recommendations = model.recommendations(user_id=1)
+        logging.info("RECOMMENDATIONS:")
+        for (name, rating) in recommendations:
+            logging.info("<{:.1f}> {}".format(rating, name))
+
 
 class CostFunctionTest(unittest.TestCase):
 
@@ -125,7 +135,7 @@ class CostFunctionTest(unittest.TestCase):
         np.testing.assert_almost_equal(numgrad, grad, decimal=2)
 
 
-class UtilsTest:
+class UtilsTest(unittest.TestCase):
 
     def test_rating_normalization(self):
         Y = utils.load_from_file('data/Y.bin')[:10, :10]
@@ -133,6 +143,11 @@ class UtilsTest:
         Ynorm, Ymean = utils.normalize_ratings(Y, R)
         Ymean_target = np.array([4.2, 3, 4, 4, 3, 5, 3.66666667, 3.33333333, 4.5, 3])
         np.testing.assert_almost_equal(Ymean, Ymean_target, decimal=2)
+
+    def test_load_movie_names(self):
+        movie_list = utils.load_movie_list()
+        for i in range(10):
+            logging.info("MOVIE = {}".format(movie_list[i]))
 
 
 if __name__ == '__main__':

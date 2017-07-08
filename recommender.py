@@ -11,7 +11,7 @@ class Recommender:
     DEFAULT_REGULARIZATION = 1
     DEFAULT_MAX_ITER = 100
 
-    def __init__(self, num_features=DEFAULT_NUM_FEATURES,
+    def __init__(self, num_features=DEFAULT_NUM_FEATURES, normalized=False,
                  reg=DEFAULT_REGULARIZATION, Y=None, R=None):
         self.num_features = num_features
         self.reg = reg
@@ -19,9 +19,10 @@ class Recommender:
         self.R = R
         self.Theta = None
         self.X = None
+        self.normalized = normalized
 
     def learn(self, Y=None, R=None, num_features=None, reg=None, verbose=False,
-              maxiter=DEFAULT_MAX_ITER):
+              maxiter=DEFAULT_MAX_ITER, normalize=None):
         import utils
 
         # Set the variables first
@@ -33,10 +34,15 @@ class Recommender:
             self.reg = reg
         if num_features is not None:
             self.num_features = num_features
+        if normalize is not None:
+            self.normalized = normalize
 
         # Prepare all the required local variables
         Y, R, num_features, reg = self.Y, self.R, self.num_features, self.reg
-        num_movies, num_users = Y.shape
+        if self.normalized:
+            Y, self.Ymean = utils.normalize_ratings(self.Y, self.R)
+            self.normalized = True
+        num_movies, num_users = self.Y.shape
 
         # Initialize random parameters
         logging.info("Initializing random paramters...")
@@ -69,6 +75,17 @@ class Recommender:
         self.Theta = np.reshape(result.x[num_movies*num_features:], (num_users, num_features))
 
         return self
+
+    def recommendations(self, user_id, n=10):
+        import utils
+
+        Ypredicted = np.dot(self.X, self.Theta.T)
+        if self.normalized:
+            Ypredicted += self.Ymean.reshape(-1,1)
+        user_predictions = Ypredicted[:, user_id].flatten()
+        recommended_ids = np.flip(user_predictions.argsort()[-11:], axis=0)
+        movies = utils.load_movie_list('data/movie_ids.txt')
+        return [(movies[i], user_predictions[i]) for i in recommended_ids]
 
     def save(self, filename):
         import utils

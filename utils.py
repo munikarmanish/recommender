@@ -69,3 +69,8 @@ def normalize_ratings(Y, R):
         Ymean[i] = Y[i, idx].mean()
         Ynorm[i,idx] = Y[i,idx] - Ymean[i]
     return Ynorm, Ymean
+
+
+def load_movie_list(filename='data/movie_ids.txt'):
+    with open(filename, 'r') as f:
+        return [l.split(' ', 1)[1].strip() for l in f]
