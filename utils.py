@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -11,6 +12,7 @@ def load_from_file(filename):
 
 
 def save_to_file(data, filename):
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, 'wb') as f:
         pickle.dump(data, f)
 

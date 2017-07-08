@@ -111,15 +111,22 @@ class CostFunctionTest(unittest.TestCase):
         R = utils.load_from_file('data/R.bin')[:10, :10]
         Ynorm, Ymean = utils.normalize_ratings(Y, R)
         Ymean_target = np.array([4.2, 3, 4, 4, 3, 5, 3.66666667, 3.33333333, 4.5, 3])
-        np.testing.assert_almost_equal(Ymean, Ymean_target)
+        np.testing.assert_almost_equal(Ymean, Ymean_target, decimal=2)
 
-    def test_learn(self):
+    def test_learn_and_save(self):
         # num_users, num_movies, num_features = 10, 10, 5
         R = utils.load_from_file('data/R.bin').astype(float)
         Y = utils.load_from_file('data/Y.bin')
 
         model = recommender.Recommender(Y=Y, R=R, reg=1, num_features=10)
-        model.learn(verbose=True, maxiter=1000)
+        model.learn(verbose=True, maxiter=10)
+        X, Theta = model.X, model.Theta
+
+        filename = "models/recommender.bin"
+        model.save(filename)
+        model = recommender.Recommender.load(filename)
+        np.testing.assert_almost_equal(X, model.X, decimal=2)
+        np.testing.assert_almost_equal(Theta, model.Theta, decimal=2)
 
 
 if __name__ == '__main__':

@@ -68,3 +68,13 @@ class Recommender:
         self.Theta = np.reshape(result.x[num_movies*num_features:], (num_users, num_features))
 
         return self
+
+    def save(self, filename):
+        import utils
+        logging.info("Saving recommender model to '{}'".format(filename))
+        utils.save_to_file(self, filename)
+
+    def load(filename):
+        import utils
+        logging.info("Loading recommender model from '{}'".format(filename))
+        return utils.load_from_file(filename)
