@@ -29,13 +29,29 @@ class RecommenderTest(unittest.TestCase):
         np.testing.assert_almost_equal(Theta, model.Theta, decimal=2)
 
     def test_recommendation(self):
+        movies = utils.load_movie_list()
+        my_ratings = np.zeros(len(movies))
+        my_ratings[1 - 1] = 4
+        my_ratings[98 - 1] = 2
+        my_ratings[7 - 1] = 3
+        my_ratings[12 - 1] = 5
+        my_ratings[54 - 1] = 4
+        my_ratings[64 - 1] = 5
+        my_ratings[66 - 1] = 3
+        my_ratings[69 - 1] = 5
+        my_ratings[183 - 1] = 4
+        my_ratings[226 - 1] = 5
+        my_ratings[355 - 1] = 5
+
         R = utils.load_from_file('data/R.bin').astype(float)
         Y = utils.load_from_file('data/Y.bin')
+        Y = np.column_stack((my_ratings, Y))
+        R = np.column_stack((my_ratings != 0, R))
+
         model = recommender.Recommender(Y=Y, R=R, reg=10, num_features=10)
-        model.learn(maxiter=1000, verbose=True, normalize=True, tol=1e-1)
-        user_id = 100
+        model.learn(maxiter=1000, verbose=True, normalize=False, tol=1e-1)
+        user_id = 0
         rated_ids = [i for i in range(Y.shape[0]) if R[i,user_id] == 1]
-        movies = utils.load_movie_list()
         logging.info("USER {} HAS RATED:".format(user_id))
         for i in rated_ids:
             logging.info("   RATED <{:.1f}> FOR '{}'".format(Y[i,user_id], movies[i]))

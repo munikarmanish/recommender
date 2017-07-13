@@ -85,7 +85,7 @@ class Recommender:
             Ypredicted += self.Ymean.reshape(-1,1)
         user_predictions = Ypredicted[:, user_id].flatten()
         recommended_ids = np.flip(user_predictions.argsort()[-11:], axis=0)
-        movies = utils.load_movie_list('data/movie_ids.txt')
+        # movies = utils.load_movie_list('data/movie_ids.txt')
         return [(i, user_predictions[i]) for i in recommended_ids]
 
     def save(self, filename):
