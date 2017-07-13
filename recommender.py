@@ -22,7 +22,7 @@ class Recommender:
         self.normalized = normalized
 
     def learn(self, Y=None, R=None, num_features=None, reg=None, verbose=False,
-              maxiter=DEFAULT_MAX_ITER, normalize=None):
+              maxiter=DEFAULT_MAX_ITER, normalize=None, tol=1e-4):
         import utils
 
         # Set the variables first
@@ -65,6 +65,7 @@ class Recommender:
             jac=True,
             method='CG',
             callback=callback,
+            tol=tol,
             options={
                 'maxiter': maxiter,
                 'disp': verbose,
@@ -85,7 +86,7 @@ class Recommender:
         user_predictions = Ypredicted[:, user_id].flatten()
         recommended_ids = np.flip(user_predictions.argsort()[-11:], axis=0)
         movies = utils.load_movie_list('data/movie_ids.txt')
-        return [(movies[i], user_predictions[i]) for i in recommended_ids]
+        return [(i, user_predictions[i]) for i in recommended_ids]
 
     def save(self, filename):
         import utils

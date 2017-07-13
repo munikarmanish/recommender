@@ -18,7 +18,7 @@ class RecommenderTest(unittest.TestCase):
         R = utils.load_from_file('data/R.bin').astype(float)
         Y = utils.load_from_file('data/Y.bin')
 
-        model = recommender.Recommender(Y=Y, R=R, reg=1, num_features=10)
+        model = recommender.Recommender(Y=Y, R=R, reg=10, num_features=10)
         model.learn(maxiter=10, verbose=True)
         X, Theta = model.X, model.Theta
 
@@ -31,12 +31,18 @@ class RecommenderTest(unittest.TestCase):
     def test_recommendation(self):
         R = utils.load_from_file('data/R.bin').astype(float)
         Y = utils.load_from_file('data/Y.bin')
-        model = recommender.Recommender(Y=Y, R=R, reg=1, num_features=10)
-        model.learn(maxiter=10, verbose=True, normalize=True)
-        recommendations = model.recommendations(user_id=1)
+        model = recommender.Recommender(Y=Y, R=R, reg=10, num_features=10)
+        model.learn(maxiter=1000, verbose=True, normalize=True, tol=1e-1)
+        user_id = 100
+        rated_ids = [i for i in range(Y.shape[0]) if R[i,user_id] == 1]
+        movies = utils.load_movie_list()
+        logging.info("USER {} HAS RATED:".format(user_id))
+        for i in rated_ids:
+            logging.info("   RATED <{:.1f}> FOR '{}'".format(Y[i,user_id], movies[i]))
+        recommendations = model.recommendations(user_id=user_id)
         logging.info("RECOMMENDATIONS:")
-        for (name, rating) in recommendations:
-            logging.info("<{:.1f}> {}".format(rating, name))
+        for (i, rating) in recommendations:
+            logging.info("   <{:.1f}> {}".format(rating, movies[i]))
 
 
 class CostFunctionTest(unittest.TestCase):
@@ -147,7 +153,7 @@ class UtilsTest(unittest.TestCase):
     def test_load_movie_names(self):
         movie_list = utils.load_movie_list()
         for i in range(10):
-            logging.info("MOVIE = {}".format(movie_list[i]))
+            logging.info("   MOVIE = {}".format(movie_list[i]))
 
 
 if __name__ == '__main__':
