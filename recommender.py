@@ -1,4 +1,3 @@
-import logging
 import sys
 
 import numpy as np
@@ -9,10 +8,10 @@ class Recommender:
 
     DEFAULT_NUM_FEATURES = 10
     DEFAULT_REGULARIZATION = 1
-    DEFAULT_MAX_ITER = 100
+    DEFAULT_MAX_ITER = 1000
 
     def __init__(self, num_features=DEFAULT_NUM_FEATURES, normalized=False,
-                 reg=DEFAULT_REGULARIZATION, Y=None, R=None):
+                 reg=DEFAULT_REGULARIZATION, Y=None, R=None, *args, **kwargs):
         self.num_features = num_features
         self.reg = reg
         self.Y = Y
@@ -22,7 +21,7 @@ class Recommender:
         self.normalized = normalized
 
     def learn(self, Y=None, R=None, num_features=None, reg=None, verbose=False,
-              maxiter=DEFAULT_MAX_ITER, normalize=None, tol=1e-4):
+              maxiter=DEFAULT_MAX_ITER, normalize=None, tol=1e-2):
         import utils
 
         # Set the variables first
@@ -42,13 +41,14 @@ class Recommender:
         if self.normalized:
             Y, self.Ymean = utils.normalize_ratings(self.Y, self.R)
             self.normalized = True
-        num_movies, num_users = self.Y.shape
+        num_movies, num_users = Y.shape
 
         # Initialize random parameters
-        logging.info("Initializing random paramters...")
-        initial_X = np.random.randn(num_movies, num_features)
-        initial_Theta = np.random.randn(num_users, num_features)
-        initial_params = np.append(initial_X.flatten(), initial_Theta.flatten())
+        if verbose:
+            print("Initializing random paramters...")
+        initial_X = 0.01 * np.random.randn(num_movies, num_features)
+        initial_Theta = 0.01 * np.random.randn(num_users, num_features)
+        initial_params = 0.01 * np.append(initial_X.flatten(), initial_Theta.flatten())
         extra_args = (Y, R, num_features, reg)
 
         def callback(x):
@@ -57,7 +57,8 @@ class Recommender:
                 sys.stdout.flush()
 
         # Cost minimization
-        logging.info("Running the optimizer...")
+        if verbose:
+            print("Running the optimizer...")
         result = minimize(
             fun=utils.cf_cost,
             x0=initial_params,
@@ -78,8 +79,6 @@ class Recommender:
         return self
 
     def recommendations(self, user_id, n=10):
-        import utils
-
         Ypredicted = np.dot(self.X, self.Theta.T)
         if self.normalized:
             Ypredicted += self.Ymean.reshape(-1,1)
@@ -88,12 +87,22 @@ class Recommender:
         # movies = utils.load_movie_list('data/movie_ids.txt')
         return [(i, user_predictions[i]) for i in recommended_ids]
 
+    def rmse(self):
+        """Root Mean Square Error"""
+        Ypredicted = np.dot(self.X, self.Theta.T)
+        return np.sqrt(np.mean((self.Y.astype(float) - Ypredicted)**2))
+
+    def mae(self):
+        """Mean Absolute Error"""
+        Ypredicted = np.dot(self.X, self.Theta.T)
+        return np.mean(np.absolute(self.Y.astype(float) - Ypredicted))
+
     def save(self, filename):
         import utils
-        logging.info("Saving recommender model to '{}'".format(filename))
+        print("Saving recommender model to '{}'".format(filename))
         utils.save_to_file(self, filename)
 
     def load(filename):
         import utils
-        logging.info("Loading recommender model from '{}'".format(filename))
+        print("Loading recommender model from '{}'".format(filename))
         return utils.load_from_file(filename)

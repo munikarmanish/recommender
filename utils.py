@@ -35,6 +35,7 @@ def numerical_grad(f, x, h=1e-8):
 
 def cf_cost(params, Y, R, num_features=Recommender.DEFAULT_NUM_FEATURES,
             reg=Recommender.DEFAULT_REGULARIZATION):
+    Y = Y.astype(float)
     # Unpack the parameters
     num_movies, num_users = Y.shape
     num_params = num_movies * num_features

@@ -1,6 +1,4 @@
-#!/bin/env python3
-
-import logging
+#!python3
 import sys
 import unittest
 
@@ -52,13 +50,13 @@ class RecommenderTest(unittest.TestCase):
         model.learn(maxiter=1000, verbose=True, normalize=False, tol=1e-1)
         user_id = 0
         rated_ids = [i for i in range(Y.shape[0]) if R[i,user_id] == 1]
-        logging.info("USER {} HAS RATED:".format(user_id))
+        print("USER {} HAS RATED:".format(user_id))
         for i in rated_ids:
-            logging.info("   RATED <{:.1f}> FOR '{}'".format(Y[i,user_id], movies[i]))
+            print("   RATED <{:.1f}> FOR '{}'".format(Y[i,user_id], movies[i]))
         recommendations = model.recommendations(user_id=user_id)
-        logging.info("RECOMMENDATIONS:")
+        print("RECOMMENDATIONS:")
         for (i, rating) in recommendations:
-            logging.info("   <{:.1f}> {}".format(rating, movies[i]))
+            print("   <{:.1f}> {}".format(rating, movies[i]))
 
 
 class CostFunctionTest(unittest.TestCase):
@@ -70,11 +68,11 @@ class CostFunctionTest(unittest.TestCase):
         np.testing.assert_almost_equal(grad, numgrad)
 
     def test_cf_cost(self):
-        # logging.info("Loading dataset...")
+        # print("Loading dataset...")
         R = utils.load_from_file('data/R.bin')
         Y = utils.load_from_file('data/Y.bin')
 
-        # logging.info("Loading pre-trained parameters...")
+        # print("Loading pre-trained parameters...")
         _ = loadmat('data/movie_params.mat')
         X = _.get('X')
         Theta = _.get('Theta')
@@ -90,8 +88,8 @@ class CostFunctionTest(unittest.TestCase):
 
         params = np.append(X.flatten(), Theta.flatten())
         cost = utils.cf_cost(params=params, Y=Y, R=R, num_features=num_features, reg=0)[0]
-        # logging.info("Expected cost = 22.22")
-        # logging.info("Computed cost = {:.2f}".format(cost))
+        # print("Expected cost = 22.22")
+        # print("Computed cost = {:.2f}".format(cost))
         self.assertAlmostEqual(22.22, cost, places=2)
 
     def test_cf_gradient_without_regularization(self):
@@ -114,11 +112,11 @@ class CostFunctionTest(unittest.TestCase):
         np.testing.assert_almost_equal(numgrad, grad, decimal=2)
 
     def test_cf_cost_regularization(self):
-        # logging.info("Loading dataset...")
+        # print("Loading dataset...")
         R = utils.load_from_file('data/R.bin')
         Y = utils.load_from_file('data/Y.bin')
 
-        # logging.info("Loading pre-trained parameters...")
+        # print("Loading pre-trained parameters...")
         _ = loadmat('data/movie_params.mat')
         X = _.get('X')
         Theta = _.get('Theta')
@@ -169,11 +167,8 @@ class UtilsTest(unittest.TestCase):
     def test_load_movie_names(self):
         movie_list = utils.load_movie_list()
         for i in range(10):
-            logging.info("   MOVIE = {}".format(movie_list[i]))
+            print("   MOVIE = {}".format(movie_list[i]))
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        stream=sys.stderr, format='[%(levelname)s] :: %(message)s',
-        level=logging.NOTSET)
     unittest.main()
